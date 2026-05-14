@@ -111,6 +111,27 @@ h1 span{color:var(--blue)}
 .run-btn:hover{background:var(--blue-dark);box-shadow:var(--shadow-lg);transform:translateY(-1px)}
 .run-btn:active{transform:none}
 
+/* UPLOAD PREVIEW & LOGIN GATE */
+.upload-preview-wrap{position:relative;margin:20px;border-radius:12px;overflow:hidden;display:none}
+.upload-preview-img{width:100%;max-height:320px;object-fit:cover;display:block;border-radius:12px;filter:blur(6px) brightness(0.65)}
+.upload-preview-gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center}
+.gate-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.02em;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.gate-sub{font-size:13.5px;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.4);max-width:280px;line-height:1.5}
+.gate-btn{background:#2563eb;color:#fff;border:none;border-radius:10px;padding:13px 32px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 4px 20px rgba(37,99,235,.5)}
+.gate-btn:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 6px 24px rgba(37,99,235,.6)}
+.upload-filename{font-size:12px;color:var(--text-light);padding:8px 20px 0;display:none}
+.change-file-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--text-mid);cursor:pointer;font-family:inherit;margin:0 20px 12px;display:none;transition:all .15s}
+.change-file-btn:hover{border-color:#94a3b8;color:var(--text)}
+
+/* FAQ MODAL */
+#faqModal .modal{max-width:600px}
+.faq-list{display:flex;flex-direction:column;gap:0}
+.faq-item{border-bottom:1px solid var(--border);padding:16px 0}
+.faq-item:last-child{border-bottom:none;padding-bottom:4px}
+.faq-q{font-size:14px;font-weight:600;color:var(--text);margin-bottom:7px;display:flex;align-items:flex-start;gap:8px}
+.faq-q-icon{color:var(--blue);font-weight:700;flex-shrink:0}
+.faq-a{font-size:13.5px;color:var(--text-mid);line-height:1.65;padding-left:22px}
+
 /* PRICING */
 .pricing-section{margin-top:52px}
 .section-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px;text-align:center}
@@ -334,11 +355,13 @@ footer{border-top:1px solid var(--border);background:var(--white);margin-top:60p
       <span class="logo-text">Image<span>Assist</span></span>
     </div>
     <div class="nav-links" id="navGuest">
+      <button class="nav-link" onclick="openModal('faqModal')">FAQ</button>
       <button class="nav-link" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Pricing</button>
       <button class="nav-link" onclick="openModal('loginModal')">Log in</button>
       <button class="nav-btn" onclick="openModal('signupModal')">Sign up free</button>
     </div>
     <div class="nav-links" id="navUser" style="display:none">
+      <button class="nav-link" onclick="openModal('faqModal')">FAQ</button>
       <button class="nav-link" onclick="showPortal()">My Portal</button>
       <button class="nav-btn outline" onclick="logout()">Log out</button>
     </div>
@@ -366,12 +389,25 @@ footer{border-top:1px solid var(--border);background:var(--white);margin-top:60p
       </div>
       <div class="upload-title">Drop your images here</div>
       <div class="upload-sub">or click to browse from your device</div>
-      <button class="upload-cta">
+      <button class="upload-cta" onclick="document.getElementById('homeFileInput').click()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Upload Image
       </button>
       <div class="upload-formats">JPG, PNG, HEIC, TIFF · up to 50 MB</div>
+      <input type="file" id="homeFileInput" accept="image/*" style="display:none" onchange="handleHomeUpload(this)">
     </div>
+
+    <!-- Preview + Login Gate -->
+    <div class="upload-preview-wrap" id="homePreviewWrap">
+      <img id="homePreviewImg" src="https://i.ibb.co/wFYWsvGX/login-to-view.jpg" alt="Preview" class="upload-preview-img">
+      <div class="upload-preview-gate">
+        <div class="gate-title">Your image is ready</div>
+        <div class="gate-sub">Log in or sign up to enhance your image and view results</div>
+        <button class="gate-btn" onclick="openModal('loginModal')">Log in or Sign up to view results</button>
+      </div>
+    </div>
+    <div class="upload-filename" id="homeFileName"></div>
+    <button class="change-file-btn" id="homeChangeBtn" onclick="resetHomeUpload()">✕ Remove &amp; choose different image</button>
 
     <div class="tool-section">
       <div class="section-label">Choose Enhancement</div>
@@ -433,14 +469,14 @@ footer{border-top:1px solid var(--border);background:var(--white);margin-top:60p
     <div class="result-gallery-label" style="margin-top:24px;">🔎 Declutter</div>
     <div class="result-card">
       <div class="before-after">
-        <div class="ba-panel"><img src="https://i.ibb.co/dwtMBJ7W/BEFORE-DECLUTTER.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/VcB6Rh0t/BEFORE-DECLUTTER-4.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
         <div class="ba-panel"><img src="https://i.ibb.co/0j8T6vYL/after-decluttered.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
       </div>
       <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-clean">🔎 Declutter · Complete</div></div>
     </div>
     <div class="result-card">
       <div class="before-after">
-        <div class="ba-panel"><img src="https://i.ibb.co/VcB6Rh0t/BEFORE-DECLUTTER-4.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/dwtMBJ7W/BEFORE-DECLUTTER.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
         <div class="ba-panel"><img src="https://i.ibb.co/jkTWpyxF/hadspen-Decluttered-4.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
       </div>
       <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-clean">🔎 Declutter · Complete</div></div>
@@ -826,6 +862,46 @@ footer{border-top:1px solid var(--border);background:var(--white);margin-top:60p
   </div>
 </div>
 
+<!-- FAQ MODAL -->
+<div class="modal-overlay" id="faqModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head">
+      <div><div class="modal-title">Frequently Asked Questions</div><div class="modal-sub">Everything you need to know about ImageAssist</div></div>
+      <button class="modal-close" onclick="closeModal('faqModal')">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;padding-top:16px">
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-icon">Q.</span> How long does each image generation take?</div>
+          <div class="faq-a">Images are generated in under 1 minute.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-icon">Q.</span> How do I download the image?</div>
+          <div class="faq-a">Images are available for download after each generation. Ensure you have enough credits purchased to generate each image.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-icon">Q.</span> What is so good about ImageAssist?</div>
+          <div class="faq-a">Our models are derived from 12+ years working in the real estate media industry. Preferences of image outputs are derived from hundreds of clients across Australia.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-icon">Q.</span> Why would anyone need to declutter an image, convert it from day to dusk, or enhance the grass?</div>
+          <div class="faq-a">Making these amendments to your real estate listing images significantly enhances the overall presentation. Giving potential buyers or renters perspective of how the home can look at certain times of day, after items are removed, and how the garden may be landscaped at its peak time of year.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-icon">Q.</span> Are my credits refundable?</div>
+          <div class="faq-a">Once credits are purchased, they are non-refundable. We suggest topping up a small amount when starting on the platform to cross check you're happy with the outputs provided.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Modal helpers ──
 function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden' }
@@ -887,15 +963,54 @@ document.querySelectorAll('.tool-grid').forEach(grid=>{
   });
 });
 
-// ── Drop zones ──
-[document.getElementById('dropZone'),document.getElementById('portalDrop')].forEach(dz=>{
-  if(!dz)return;
-  ['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('active')}));
-  ['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('active')}));
+// ── Upload preview & login gate ──
+function handleHomeUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const dz = document.getElementById('dropZone');
+  const previewWrap = document.getElementById('homePreviewWrap');
+  const fileName = document.getElementById('homeFileName');
+  const changeBtn = document.getElementById('homeChangeBtn');
+
+  // Show the gate with the login-to-view background image
+  dz.style.display = 'none';
+  previewWrap.style.display = 'block';
+  fileName.style.display = 'block';
+  fileName.textContent = '📎 ' + file.name;
+  changeBtn.style.display = 'inline-flex';
+}
+
+function resetHomeUpload() {
+  document.getElementById('dropZone').style.display = 'block';
+  document.getElementById('homePreviewWrap').style.display = 'none';
+  document.getElementById('homeFileName').style.display = 'none';
+  document.getElementById('homeChangeBtn').style.display = 'none';
+  document.getElementById('homeFileInput').value = '';
+}
+
+// Allow drag & drop to also trigger the preview
+document.getElementById('dropZone').addEventListener('dragenter',ev=>{ev.preventDefault();document.getElementById('dropZone').classList.add('active')});
+document.getElementById('dropZone').addEventListener('dragover',ev=>{ev.preventDefault();document.getElementById('dropZone').classList.add('active')});
+document.getElementById('dropZone').addEventListener('dragleave',ev=>{ev.preventDefault();document.getElementById('dropZone').classList.remove('active')});
+document.getElementById('dropZone').addEventListener('drop', ev=>{
+  ev.preventDefault();
+  document.getElementById('dropZone').classList.remove('active');
+  const file = ev.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')){
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('homeFileInput').files = dt.files;
+    handleHomeUpload(document.getElementById('homeFileInput'));
+  }
 });
 
 // ── Run btn ──
-document.getElementById('runBtn').addEventListener('click',function(){
+// Portal drop zone
+const portalDz = document.getElementById('portalDrop');
+if(portalDz){
+  ['dragenter','dragover'].forEach(e=>portalDz.addEventListener(e,ev=>{ev.preventDefault();portalDz.classList.add('active')}));
+  ['dragleave','drop'].forEach(e=>portalDz.addEventListener(e,ev=>{ev.preventDefault();portalDz.classList.remove('active')}));
+}
   this.innerHTML='<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Processing…';
   this.style.opacity='.8'; this.disabled=true;
   setTimeout(()=>{
