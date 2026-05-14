@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Assist — AI Property Enhancement</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#2563eb; --blue-light:#3b82f6; --blue-pale:#eff6ff;
+  --blue-mid:#dbeafe; --blue-dark:#1d4ed8;
+  --text:#0f172a; --text-mid:#475569; --text-light:#94a3b8;
+  --border:#e2e8f0; --white:#fff; --bg:#f0f4f8;
+  --green:#16a34a; --green-pale:#f0fdf4; --green-mid:#bbf7d0;
+  --radius:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 4px 24px rgba(37,99,235,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;color:var(--text);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200}
+.nav-inner{max-width:960px;margin:0 auto;padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer}
+.logo-icon{width:34px;height:34px;flex-shrink:0}
+.logo-text{font-size:16px;font-weight:600;color:var(--text);letter-spacing:-.02em}
+.logo-text span{color:var(--blue)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{font-size:13.5px;color:var(--text-mid);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all .15s;cursor:pointer;background:none;border:none;font-family:inherit}
+.nav-link:hover{background:var(--bg);color:var(--text)}
+.nav-btn{font-size:13.5px;font-weight:500;color:var(--white);background:var(--blue);border:none;border-radius:8px;padding:7px 16px;cursor:pointer;transition:background .15s;margin-left:4px;font-family:inherit}
+.nav-btn:hover{background:var(--blue-dark)}
+.nav-btn.outline{background:none;color:var(--blue);border:1.5px solid var(--blue-mid)}
+.nav-btn.outline:hover{background:var(--blue-pale)}
+
+/* MODAL OVERLAY */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.18);width:100%;max-width:420px;animation:modalIn .22s ease;margin:auto}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.modal-head{padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.modal-title{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.modal-sub{font-size:13px;color:var(--text-mid);margin-top:3px}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text-light);padding:4px;border-radius:6px;font-size:18px;line-height:1;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12.5px;font-weight:500;color:var(--text-mid)}
+.field input,.field select{border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;background:var(--white)}
+.field input::placeholder{color:#b0bac8}
+.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.modal-btn{width:100%;background:var(--blue);color:var(--white);border:none;border-radius:10px;padding:12px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.modal-btn:hover{background:var(--blue-dark);box-shadow:var(--shadow-lg)}
+.modal-switch{text-align:center;font-size:13px;color:var(--text-mid)}
+.modal-switch a{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:500}
+.modal-switch a:hover{text-decoration:underline}
+.modal-divider{height:1px;background:var(--border)}
+
+/* CONGRATS MODAL */
+.congrats-modal{background:var(--white);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.18);width:100%;max-width:380px;animation:modalIn .3s ease;margin:auto;text-align:center}
+.congrats-body{padding:36px 32px 32px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.congrats-icon{font-size:52px;line-height:1;margin-bottom:4px}
+.congrats-title{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.congrats-msg{font-size:14px;color:var(--text-mid);line-height:1.6;max-width:280px}
+.congrats-credits{display:inline-flex;align-items:center;gap:8px;background:var(--blue-pale);border:1.5px solid var(--blue-mid);border-radius:12px;padding:10px 18px;font-size:15px;font-weight:600;color:var(--blue);margin:4px 0}
+.congrats-note{font-size:12px;color:var(--text-light);line-height:1.5}
+.congrats-btn{width:100%;background:var(--blue);color:var(--white);border:none;border-radius:10px;padding:12px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:4px}
+.congrats-btn:hover{background:var(--blue-dark);box-shadow:var(--shadow-lg)}
+
+/* PAGE */
+.page{max-width:960px;margin:0 auto;padding:0 20px 80px}
+
+/* HERO */
+.hero{text-align:center;padding:52px 20px 36px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-pale);border:1px solid var(--blue-mid);color:var(--blue);font-size:12px;font-weight:500;border-radius:20px;padding:4px 12px;margin-bottom:20px}
+h1{font-size:clamp(26px,5vw,42px);font-weight:700;letter-spacing:-.03em;line-height:1.12;margin-bottom:14px}
+h1 span{color:var(--blue)}
+.hero-sub{font-size:clamp(14px,2.5vw,16px);color:var(--text-mid);max-width:480px;margin:0 auto}
+
+/* UPLOAD */
+.upload-card{background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.upload-zone{border:2px dashed #cbd5e1;border-radius:12px;margin:20px;padding:44px 20px;text-align:center;cursor:pointer;transition:all .2s;background:#f8fafc}
+.upload-zone:hover,.upload-zone.active{border-color:var(--blue);background:var(--blue-pale)}
+.upload-icon-wrap{width:52px;height:52px;background:var(--blue-mid);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--blue)}
+.upload-title{font-size:15px;font-weight:500;margin-bottom:4px}
+.upload-sub{font-size:13px;color:var(--text-light);margin-bottom:16px}
+.upload-cta{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:var(--white);font-size:13.5px;font-weight:500;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;transition:background .15s;font-family:inherit}
+.upload-cta:hover{background:var(--blue-dark)}
+.upload-formats{margin-top:12px;font-size:11.5px;color:var(--text-light)}
+
+/* TOOLS */
+.tool-section{padding:0 20px 20px}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:10px}
+.tool-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.tool-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 20px;cursor:pointer;transition:all .18s;background:var(--white);display:flex;align-items:center;gap:0;user-select:none}
+.tool-card:hover{border-color:var(--blue-light);background:var(--blue-pale)}
+.tool-card.selected{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.tool-emoji{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;margin-right:16px}
+.tool-card:not(.selected) .tool-emoji{background:#f1f5f9}
+.tool-card.selected .tool-emoji{background:var(--blue-mid)}
+.tool-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.2;flex:0 0 160px}
+.tool-price{font-size:13px;color:var(--blue);font-weight:600;flex:0 0 130px}
+.tool-desc{font-size:12.5px;color:var(--text-light);line-height:1.4;flex:1}
+
+/* RUN */
+.run-wrap{padding:0 20px 20px}
+.run-btn{width:100%;background:var(--blue);color:var(--white);border:none;border-radius:var(--radius);padding:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.01em}
+.run-btn:hover{background:var(--blue-dark);box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.run-btn:active{transform:none}
+
+/* PRICING */
+.pricing-section{margin-top:52px}
+.section-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px;text-align:center}
+.section-sub{font-size:14px;color:var(--text-mid);text-align:center;margin-bottom:28px}
+
+/* CREDIT USAGE TABLE */
+.usage-table-wrap{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:28px}
+.usage-table-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.usage-table-title{font-size:14px;font-weight:600}
+.usage-table-sub{font-size:12.5px;color:var(--text-light);margin-left:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:11px 20px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);background:#f8fafc;border-bottom:1px solid var(--border)}
+td{padding:13px 20px;font-size:13.5px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.td-service{display:flex;align-items:center;gap:8px;font-weight:500}
+.td-credits{font-weight:700;color:var(--blue)}
+.td-price{color:var(--text-mid)}
+.td-note{font-size:11.5px;color:var(--text-light)}
+
+/* CREDIT PACKS */
+.packs-title-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.packs-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pack-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .18s;position:relative}
+.pack-card:hover{border-color:var(--blue-light);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.pack-card.pop{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.pop-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:var(--white);font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.pack-credits-val{font-size:24px;font-weight:700;color:var(--blue);letter-spacing:-.02em;line-height:1}
+.pack-credits-label{font-size:11px;color:var(--text-light);margin-bottom:6px}
+.pack-price-val{font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px}
+.pack-price-each{font-size:10.5px;color:var(--text-light);margin-bottom:12px}
+.pack-btn{width:100%;background:var(--blue-pale);color:var(--blue);border:1.5px solid var(--blue-mid);border-radius:8px;padding:7px 0;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.pack-btn:hover,.pack-card.pop .pack-btn{background:var(--blue);color:var(--white);border-color:var(--blue)}
+
+/* free credits note */
+.free-credits-banner{background:var(--green-pale);border:1.5px solid var(--green-mid);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.fcb-icon{font-size:22px;flex-shrink:0}
+.fcb-text{font-size:13.5px;color:#15803d;line-height:1.5}
+.fcb-text strong{font-weight:600}
+
+/* RESULTS */
+.results-section{margin-top:36px}
+.result-gallery-label{font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;padding-left:2px}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.results-title{font-size:15px;font-weight:600}
+.results-count{font-size:12px;color:var(--text-light);background:var(--white);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+.result-card{background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;animation:fadeUp .3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.before-after{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.ba-panel{position:relative;aspect-ratio:16/10;overflow:hidden}
+.ba-label{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text);border-radius:6px;padding:3px 8px;border:1px solid var(--border)}
+.result-body{padding:14px 16px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.result-meta{flex:1;min-width:0}
+.result-name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;margin-top:4px;border-radius:6px;padding:2px 8px}
+.tag-dusk{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}
+.tag-clean{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.tag-grass{background:#f0fdf4;color:#15803d;border:1px solid #86efac}
+.tag-processing{background:var(--blue-pale);color:var(--blue);border:1px solid var(--blue-mid)}
+.result-actions{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.action-btn{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:12.5px;font-weight:500;border-radius:8px;padding:7px 13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-dl{background:var(--blue);color:var(--white);border:none}
+.btn-dl:hover{background:var(--blue-dark)}
+.btn-save{background:var(--white);color:var(--text-mid);border:1px solid var(--border)}
+.btn-save:hover{border-color:#94a3b8;color:var(--text)}
+.processing-bar{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.pbar-track{flex:1;height:4px;background:var(--blue-mid);border-radius:2px;overflow:hidden}
+.pbar-fill{height:100%;background:var(--blue);border-radius:2px;animation:pbarAnim 2s ease-in-out infinite alternate}
+@keyframes pbarAnim{from{width:30%}to{width:75%}}
+.pbar-label{font-size:12px;color:var(--text-mid);white-space:nowrap}
+.spinner{width:14px;height:14px;flex-shrink:0;border:2px solid var(--blue-mid);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HOW IT WORKS */
+.how-section{margin-top:52px;text-align:center}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px;text-align:left}
+.step-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px 18px}
+.step-num{width:28px;height:28px;border-radius:8px;background:var(--blue-pale);border:1px solid var(--blue-mid);color:var(--blue);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.step-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.step-desc{font-size:12.5px;color:var(--text-mid);line-height:1.5}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);background:var(--white);margin-top:60px}
+.footer-inner{max-width:960px;margin:0 auto;padding:22px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-copy{font-size:12.5px;color:var(--text-light)}
+.footer-links{display:flex;gap:18px}
+.footer-links a{font-size:12.5px;color:var(--text-light);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--blue)}
+
+/* CSS HOUSES */
+.house-day{width:100%;height:100%;background:linear-gradient(180deg,#87CEEB 0%,#b8d9f0 38%,#5a9040 38%,#6aa050 50%,#c8b88a 50%,#e4d8b0 100%);position:relative;overflow:hidden}
+.house-day::before{content:'';position:absolute;bottom:40%;left:50%;transform:translateX(-50%);width:52%;height:33%;background:#d8c8a0;border:1.5px solid #b0986a}
+.house-day::after{content:'';position:absolute;bottom:71%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:72px solid #8B5E3C}
+.sun{position:absolute;top:12%;right:18%;width:22px;height:22px;border-radius:50%;background:#FFD700;box-shadow:0 0 16px #FFD700}
+.house-dusk{width:100%;height:100%;background:linear-gradient(180deg,#0d0a24 0%,#1a1040 28%,#2e1830 28%,#3e2838 45%,#5a4030 45%,#7a6050 100%);position:relative;overflow:hidden}
+.house-dusk::before{content:'';position:absolute;bottom:38%;left:50%;transform:translateX(-50%);width:52%;height:33%;background:#1a1008;border:1px solid #2a1808}
+.house-dusk::after{content:'';position:absolute;bottom:69%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:72px solid #0a0804}
+.glow-h{position:absolute;bottom:42%;left:0;right:0;height:20%;background:radial-gradient(ellipse at 50% 100%,rgba(255,100,20,.4) 0%,transparent 65%)}
+.win{position:absolute;background:rgba(255,195,60,.85);box-shadow:0 0 10px rgba(255,195,60,.6);border-radius:1px}
+.house-clean{width:100%;height:100%;background:linear-gradient(180deg,#87CEEB 0%,#cce4f8 38%,#68a84a 38%,#78b85a 50%,#d0c090 50%,#ecdbb0 100%);position:relative;overflow:hidden}
+.house-clean::before{content:'';position:absolute;bottom:40%;left:50%;transform:translateX(-50%);width:52%;height:33%;background:#e0d0a8;border:1.5px solid #b8a070}
+.house-clean::after{content:'';position:absolute;bottom:71%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:72px solid #7a5030}
+.house-cluttered{width:100%;height:100%;background:linear-gradient(180deg,#87CEEB 0%,#b8d9f0 38%,#5a9040 38%,#6aa050 50%,#c8b88a 50%,#e4d8b0 100%);position:relative;overflow:hidden}
+.house-cluttered::before{content:'';position:absolute;bottom:40%;left:50%;transform:translateX(-50%);width:52%;height:33%;background:#d8c8a0;border:1.5px solid #b0986a}
+.house-cluttered::after{content:'';position:absolute;bottom:71%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:72px solid #8B5E3C}
+.clutter{position:absolute;background:#888;border-radius:2px}
+.grass-dead{width:100%;height:100%;background:linear-gradient(180deg,#87CEEB 0%,#b8d9f0 38%,#8a7a40 38%,#9a8a50 50%,#c8b888 50%,#e4d8b0 100%);position:relative;overflow:hidden}
+.grass-dead::before{content:'';position:absolute;bottom:40%;left:50%;transform:translateX(-50%);width:52%;height:33%;background:#d8c8a0;border:1.5px solid #b0986a}
+.grass-dead::after{content:'';position:absolute;bottom:71%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:72px solid #8B5E3C}
+.grass-fresh{width:100%;height:100%;background:linear-gradient(180deg,#87CEEB 0%,#c4e0f8 38%,#3a8a28 38%,#4aa038 50%,#c8b888 50%,#e4d8b0 100%);position:relative;overflow:hidden}
+.grass-fresh::before{content:'';position:absolute;bottom:40%;left:50%;transform:translateX(-50%);width:52%;height:33%;background:#dccca0;border:1.5px solid #b0986a}
+.grass-fresh::after{content:'';position:absolute;bottom:71%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:72px solid #7a5030}
+
+/* PORTAL */
+#portalPage{display:none;min-height:100vh;background:var(--bg)}
+.portal-wrap{max-width:960px;margin:0 auto;padding:32px 20px 60px}
+.portal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px}
+.portal-greeting{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.portal-greeting span{color:var(--blue)}
+.portal-header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.credits-chip{display:flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid var(--blue-mid);border-radius:12px;padding:10px 16px;box-shadow:var(--shadow)}
+.credits-chip-icon{width:34px;height:34px;background:var(--blue-pale);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.credits-chip-val{font-size:20px;font-weight:700;color:var(--blue);letter-spacing:-.02em;line-height:1}
+.credits-chip-label{font-size:11px;color:var(--text-light)}
+.buy-btn{background:var(--blue);color:var(--white);border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.buy-btn:hover{background:var(--blue-dark);box-shadow:var(--shadow-lg)}
+
+.portal-tabs{display:flex;gap:2px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px;width:fit-content;flex-wrap:wrap}
+.ptab{padding:8px 20px;border-radius:9px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--text-mid);transition:all .15s;border:none;background:none;font-family:inherit;white-space:nowrap}
+.ptab.active{background:var(--blue);color:var(--white)}
+.ptab:not(.active):hover{background:var(--bg);color:var(--text)}
+.ptab-panel{display:none}
+.ptab-panel.active{display:block}
+
+/* credits tab */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+.stat-label{font-size:11.5px;color:var(--text-light);font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.stat-val{font-size:32px;font-weight:700;letter-spacing:-.03em;color:var(--text);line-height:1}
+.stat-val.blue{color:var(--blue)}
+.stat-sub{font-size:12px;color:var(--text-light);margin-top:4px}
+.history-card{background:var(--white);border:1px solid var(--border);border-radius:14px;margin-top:20px;overflow:hidden;box-shadow:var(--shadow)}
+.history-head{padding:16px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600}
+.history-row{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);gap:12px}
+.history-row:last-child{border-bottom:none}
+.hr-action{font-size:13.5px;color:var(--text)}
+.hr-date{font-size:11.5px;color:var(--text-light);margin-top:2px}
+.hr-amt{font-weight:700;font-size:15px;flex-shrink:0}
+.hr-amt.neg{color:#dc2626}
+.hr-amt.pos{color:var(--green)}
+
+/* gallery tab */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.g-item{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:var(--shadow)}
+.g-item:hover{border-color:var(--blue-light);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.g-img{aspect-ratio:16/10;overflow:hidden}
+.g-info{padding:10px 12px 12px}
+.g-name{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.g-meta{display:flex;align-items:center;justify-content:space-between}
+.g-tag{font-size:10.5px;font-weight:500;border-radius:5px;padding:2px 7px}
+.g-date{font-size:11px;color:var(--text-light)}
+.g-actions{display:flex;gap:6px;margin-top:9px}
+.g-btn{flex:1;background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:6px;font-size:11.5px;font-weight:500;color:var(--text-mid);cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.g-btn:hover{background:var(--blue-pale);color:var(--blue);border-color:var(--blue-mid)}
+.g-btn.prim{background:var(--blue);color:var(--white);border-color:var(--blue)}
+.g-btn.prim:hover{background:var(--blue-dark)}
+
+/* BUY CREDITS MODAL */
+.buy-option{border:1.5px solid var(--border);border-radius:12px;padding:15px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s}
+.buy-option:hover{border-color:var(--blue)}
+.buy-option.featured{border-color:var(--blue);background:var(--blue-pale);position:relative}
+.buy-feat-badge{position:absolute;top:-10px;left:16px;background:var(--blue);color:var(--white);font-size:10.5px;font-weight:600;padding:2px 10px;border-radius:20px}
+.buy-option-label{font-weight:600;font-size:14.5px}
+.buy-option-sub{font-size:11.5px;color:var(--text-light);margin-top:2px}
+.buy-option-right{text-align:right;flex-shrink:0}
+.buy-option-price{font-size:18px;font-weight:700;color:var(--blue)}
+.buy-option-each{font-size:11px;color:var(--text-light)}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .packs-grid{grid-template-columns:repeat(3,1fr)}
+  .pricing-grid,.steps-grid{grid-template-columns:1fr}
+  .tool-name{flex:0 0 120px}
+  .tool-price{flex:0 0 100px}
+  .stat-grid{grid-template-columns:1fr}
+  .before-after{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+  nav .nav-link:not(.nav-btn){display:none}
+  .packs-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-grid{grid-template-columns:1fr}
+  .portal-header{flex-direction:column}
+  .tool-desc{display:none}
+  .tool-name{flex:0 0 130px}
+  .tool-price{flex:1}
+  table{font-size:12.5px}
+  th,td{padding:10px 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo" onclick="showHome()">
+      <svg class="logo-icon" viewBox="0 0 34 34" fill="none">
+        <rect width="34" height="34" rx="9" fill="#2563eb"/>
+        <rect x="6" y="9" width="16" height="13" rx="2.5" fill="none" stroke="white" stroke-width="1.6"/>
+        <path d="M6 17.5 L10.5 13.5 L14 17 L17 14.5 L22 19.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="9.5" cy="12.5" r="1.2" fill="white" opacity=".9"/>
+        <line x1="25" y1="7" x2="25" y2="11" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="23" y1="9" x2="27" y2="9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="23.6" y1="7.6" x2="26.4" y2="10.4" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        <line x1="26.4" y1="7.6" x2="23.6" y2="10.4" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        <line x1="26" y1="21" x2="26" y2="24" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity=".6"/>
+        <line x1="24.5" y1="22.5" x2="27.5" y2="22.5" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity=".6"/>
+      </svg>
+      <span class="logo-text">Image<span>Assist</span></span>
+    </div>
+    <div class="nav-links" id="navGuest">
+      <button class="nav-link" onclick="document.getElementById('pricingSection').scrollIntoView({behavior:'smooth'})">Pricing</button>
+      <button class="nav-link" onclick="openModal('loginModal')">Log in</button>
+      <button class="nav-btn" onclick="openModal('signupModal')">Sign up free</button>
+    </div>
+    <div class="nav-links" id="navUser" style="display:none">
+      <button class="nav-link" onclick="showPortal()">My Portal</button>
+      <button class="nav-btn outline" onclick="logout()">Log out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ HOME PAGE ═══════════ -->
+<div id="homePage">
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Powered by AI
+    </div>
+    <h1>Enhance property photos<br><span>in seconds</span></h1>
+    <p class="hero-sub">Upload your real estate images and instantly apply professional AI enhancements — no editing skills needed.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-card">
+    <div class="upload-zone" id="dropZone">
+      <div class="upload-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-title">Drop your images here</div>
+      <div class="upload-sub">or click to browse from your device</div>
+      <button class="upload-cta">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Image
+      </button>
+      <div class="upload-formats">JPG, PNG, HEIC, TIFF · up to 50 MB</div>
+    </div>
+
+    <div class="tool-section">
+      <div class="section-label">Choose Enhancement</div>
+      <div class="tool-grid" id="homeTools">
+        <div class="tool-card selected">
+          <div class="tool-emoji">🌆</div>
+          <div class="tool-name">Day to Dusk</div>
+          <div class="tool-price">$5.00 · 5 credits</div>
+          <div class="tool-desc">Sunset sky, lit windows, no shadows</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-emoji">🔎</div>
+          <div class="tool-name">Declutter</div>
+          <div class="tool-price">$5.00 · 5 credits</div>
+          <div class="tool-desc">Remove bins, cars &amp; unwanted objects</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-emoji">🌱</div>
+          <div class="tool-name">Grass Replacement</div>
+          <div class="tool-price">$2.00 · 2 credits</div>
+          <div class="tool-desc">Replace patchy lawn with lush green</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="run-wrap">
+      <button class="run-btn" id="runBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Enhance Image
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section">
+    <div class="results-header">
+      <span class="results-title">Recent Results</span>
+      <span class="results-count">6 images</span>
+    </div>
+
+    <!-- Day to Dusk -->
+    <div class="result-gallery-label">🌆 Day to Dusk</div>
+    <div class="result-card">
+      <div class="before-after">
+        <div class="ba-panel"><img src="https://i.ibb.co/kYwsp5q/BEFORE.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/rRjKKtHT/AFTER.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
+      </div>
+      <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-dusk">🌆 Day to Dusk · Complete</div></div>
+    </div>
+    <div class="result-card">
+      <div class="before-after">
+        <div class="ba-panel"><img src="https://i.ibb.co/wZFFB9KD/Before-1.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/NgMxy7TX/After-2.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
+      </div>
+      <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-dusk">🌆 Day to Dusk · Complete</div></div>
+    </div>
+
+    <!-- Declutter -->
+    <div class="result-gallery-label" style="margin-top:24px;">🔎 Declutter</div>
+    <div class="result-card">
+      <div class="before-after">
+        <div class="ba-panel"><img src="https://i.ibb.co/dwtMBJ7W/BEFORE-DECLUTTER.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/0j8T6vYL/after-decluttered.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
+      </div>
+      <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-clean">🔎 Declutter · Complete</div></div>
+    </div>
+    <div class="result-card">
+      <div class="before-after">
+        <div class="ba-panel"><img src="https://i.ibb.co/VcB6Rh0t/BEFORE-DECLUTTER-4.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/jkTWpyxF/hadspen-Decluttered-4.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
+      </div>
+      <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-clean">🔎 Declutter · Complete</div></div>
+    </div>
+
+    <!-- Grass Replacement -->
+    <div class="result-gallery-label" style="margin-top:24px;">🌱 Grass Replacement</div>
+    <div class="result-card">
+      <div class="before-after">
+        <div class="ba-panel"><img src="https://i.ibb.co/ksZwjQjN/LAWN-BEFORE-1.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/HDd4n3c6/Lawn-After-1.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
+      </div>
+      <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-grass">🌱 Grass Replacement · Complete</div></div>
+    </div>
+    <div class="result-card">
+      <div class="before-after">
+        <div class="ba-panel"><img src="https://i.ibb.co/gZrYc7BV/LAWN-BEFORE-2.jpg" alt="Before" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">Before</div></div>
+        <div class="ba-panel"><img src="https://i.ibb.co/8nv12DNC/Lawn-After-2.jpg" alt="After" style="width:100%;height:100%;object-fit:cover;display:block;"><div class="ba-label">After</div></div>
+      </div>
+      <div class="result-body" style="padding:12px 16px;"><div class="result-tag tag-grass">🌱 Grass Replacement · Complete</div></div>
+    </div>
+
+  </div>
+
+    <!-- PRICING & CREDITS -->
+  <div class="pricing-section" id="pricingSection">
+    <div class="section-title">Simple, transparent pricing</div>
+    <div class="section-sub">Buy credits once, use them whenever you need. Credits never expire.</div>
+
+    <!-- free credits banner -->
+    <div class="free-credits-banner">
+      <div class="fcb-icon">🎁</div>
+      <div class="fcb-text"><strong>New accounts receive 10 free credits</strong> upon confirming your email address — no credit card required to get started.</div>
+    </div>
+
+    <!-- credit usage table -->
+    <div class="usage-table-wrap">
+      <div class="usage-table-head">
+        <div class="usage-table-title">💳 Credit Usage per Enhancement</div>
+        <div class="usage-table-sub">1 credit = $1.00 at base rate</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Enhancement</th>
+            <th>Credits Used</th>
+            <th>Base Price</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="td-service">🌱 Grass Replacement</div></td>
+            <td><span class="td-credits">2 credits</span></td>
+            <td class="td-price">$2.00</td>
+            <td class="td-note">Lush green lawn, removes patches &amp; dead grass</td>
+          </tr>
+          <tr>
+            <td><div class="td-service">🔎 Declutter</div></td>
+            <td><span class="td-credits">5 credits</span></td>
+            <td class="td-price">$5.00</td>
+            <td class="td-note">Removes bins, cars, hoses &amp; exterior clutter</td>
+          </tr>
+          <tr>
+            <td><div class="td-service">🌆 Day to Dusk</div></td>
+            <td><span class="td-credits">5 credits</span></td>
+            <td class="td-price">$5.00</td>
+            <td class="td-note">Twilight sky, glowing windows, shadow removal</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- credit packs -->
+    <div class="packs-title-row">
+      <div>
+        <div style="font-size:16px;font-weight:700;letter-spacing:-.01em">Credit Packs</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">Bigger packs = lower cost per credit</div>
+      </div>
+    </div>
+    <div class="packs-grid">
+      <div class="pack-card">
+        <div class="pack-credits-val">10</div>
+        <div class="pack-credits-label">credits</div>
+        <div class="pack-price-val">$10.00</div>
+        <div class="pack-price-each">$1.00 each</div>
+        <button class="pack-btn" onclick="openModal('signupModal')">Buy</button>
+      </div>
+      <div class="pack-card">
+        <div class="pack-credits-val">25</div>
+        <div class="pack-credits-label">credits</div>
+        <div class="pack-price-val">$25.00</div>
+        <div class="pack-price-each">$1.00 each</div>
+        <button class="pack-btn" onclick="openModal('signupModal')">Buy</button>
+      </div>
+      <div class="pack-card">
+        <div class="pack-credits-val">50</div>
+        <div class="pack-credits-label">credits</div>
+        <div class="pack-price-val">$47.50</div>
+        <div class="pack-price-each">$0.95 each</div>
+        <button class="pack-btn" onclick="openModal('signupModal')">Buy</button>
+      </div>
+      <div class="pack-card">
+        <div class="pack-credits-val">75</div>
+        <div class="pack-credits-label">credits</div>
+        <div class="pack-price-val">$60.00</div>
+        <div class="pack-price-each">$0.80 each</div>
+        <button class="pack-btn" onclick="openModal('signupModal')">Buy</button>
+      </div>
+      <div class="pack-card pop">
+        <div class="pop-badge">Best value</div>
+        <div class="pack-credits-val">150</div>
+        <div class="pack-credits-label">credits</div>
+        <div class="pack-price-val">$100.00</div>
+        <div class="pack-price-each">$0.67 each</div>
+        <button class="pack-btn" onclick="openModal('signupModal')">Buy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-section">
+    <div class="section-title">How it works</div>
+    <div class="section-sub">Three simple steps to professional results</div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">1</div><div class="step-name">Upload your photo</div><div class="step-desc">Drag and drop or browse to upload any property image from your device.</div></div>
+      <div class="step-card"><div class="step-num">2</div><div class="step-name">Choose enhancement</div><div class="step-desc">Select Day to Dusk, Declutter, or Grass Replacement with one tap.</div></div>
+      <div class="step-card"><div class="step-num">3</div><div class="step-name">Download or save</div><div class="step-desc">Get your enhanced image in seconds — download instantly or save to your account gallery.</div></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /homePage -->
+
+<!-- ═══════════ PORTAL ═══════════ -->
+<div id="portalPage">
+<div class="portal-wrap">
+
+  <div class="portal-header">
+    <div>
+      <div class="portal-greeting">Welcome back, <span id="portalName">there</span> 👋</div>
+      <div style="font-size:13px;color:var(--text-light);margin-top:3px">Manage your credits and view your enhanced images</div>
+    </div>
+    <div class="portal-header-right">
+      <div class="credits-chip">
+        <div class="credits-chip-icon">⚡</div>
+        <div>
+          <div class="credits-chip-val">10</div>
+          <div class="credits-chip-label">credits remaining</div>
+        </div>
+      </div>
+      <button class="buy-btn" onclick="openModal('buyModal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Buy Credits
+      </button>
+    </div>
+  </div>
+
+  <div class="portal-tabs">
+    <button class="ptab active" onclick="switchTab('tabCredits',this)">⚡ Credits</button>
+    <button class="ptab" onclick="switchTab('tabGallery',this)">🖼 Gallery</button>
+    <button class="ptab" onclick="switchTab('tabEnhance',this)">✨ New Enhancement</button>
+  </div>
+
+  <!-- CREDITS TAB -->
+  <div class="ptab-panel active" id="tabCredits">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Credits Remaining</div>
+        <div class="stat-val blue">10</div>
+        <div class="stat-sub">≈ 2 Grass Replacement images</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Credits Used — All Time</div>
+        <div class="stat-val">0</div>
+        <div class="stat-sub">Get started with your first enhancement</div>
+      </div>
+    </div>
+
+    <div class="history-card">
+      <div class="history-head">Credit History</div>
+      <div class="history-row"><div><div class="hr-action">Welcome bonus — email confirmed</div><div class="hr-date">Today</div></div><div class="hr-amt pos">+10</div></div>
+    </div>
+
+    <!-- inline packs -->
+    <div style="margin-top:24px">
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">Top up credits</div>
+      <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px">Credits never expire — use them on any enhancement, anytime.</div>
+      <div class="packs-grid">
+        <div class="pack-card">
+          <div class="pack-credits-val">10</div>
+          <div class="pack-credits-label">credits</div>
+          <div class="pack-price-val">$10.00</div>
+          <div class="pack-price-each">$1.00 each</div>
+          <button class="pack-btn" onclick="openModal('buyModal')">Buy</button>
+        </div>
+        <div class="pack-card">
+          <div class="pack-credits-val">25</div>
+          <div class="pack-credits-label">credits</div>
+          <div class="pack-price-val">$25.00</div>
+          <div class="pack-price-each">$1.00 each</div>
+          <button class="pack-btn" onclick="openModal('buyModal')">Buy</button>
+        </div>
+        <div class="pack-card">
+          <div class="pack-credits-val">50</div>
+          <div class="pack-credits-label">credits</div>
+          <div class="pack-price-val">$47.50</div>
+          <div class="pack-price-each">$0.95 each</div>
+          <button class="pack-btn" onclick="openModal('buyModal')">Buy</button>
+        </div>
+        <div class="pack-card">
+          <div class="pack-credits-val">75</div>
+          <div class="pack-credits-label">credits</div>
+          <div class="pack-price-val">$60.00</div>
+          <div class="pack-price-each">$0.80 each</div>
+          <button class="pack-btn" onclick="openModal('buyModal')">Buy</button>
+        </div>
+        <div class="pack-card pop">
+          <div class="pop-badge">Best value</div>
+          <div class="pack-credits-val">150</div>
+          <div class="pack-credits-label">credits</div>
+          <div class="pack-price-val">$100.00</div>
+          <div class="pack-price-each">$0.67 each</div>
+          <button class="pack-btn" onclick="openModal('buyModal')">Buy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERY TAB -->
+  <div class="ptab-panel" id="tabGallery">
+    <div style="text-align:center;padding:48px 20px;color:var(--text-light)">
+      <div style="font-size:36px;margin-bottom:12px">🖼</div>
+      <div style="font-size:15px;font-weight:500;color:var(--text-mid);margin-bottom:6px">No images yet</div>
+      <div style="font-size:13px">Your enhanced images will appear here once you run your first enhancement.</div>
+      <button onclick="switchTab('tabEnhance',document.querySelectorAll('.ptab')[2])" style="margin-top:16px;background:var(--blue);color:var(--white);border:none;border-radius:9px;padding:10px 20px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit">Get started →</button>
+    </div>
+  </div>
+
+  <!-- ENHANCE TAB -->
+  <div class="ptab-panel" id="tabEnhance">
+    <div class="upload-card" style="box-shadow:none">
+      <div class="upload-zone" id="portalDrop">
+        <div class="upload-icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="upload-title">Drop your images here</div>
+        <div class="upload-sub">or click to browse from your device</div>
+        <button class="upload-cta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Image</button>
+        <div class="upload-formats">JPG, PNG, HEIC, TIFF · up to 50 MB</div>
+      </div>
+      <div class="tool-section">
+        <div class="section-label">Choose Enhancement</div>
+        <div class="tool-grid" id="portalTools">
+          <div class="tool-card selected">
+            <div class="tool-emoji">🌆</div>
+            <div class="tool-name">Day to Dusk</div>
+            <div class="tool-price">5 credits</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-emoji">🔎</div>
+            <div class="tool-name">Declutter</div>
+            <div class="tool-price">5 credits</div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-emoji">🌱</div>
+            <div class="tool-name">Grass Replacement</div>
+            <div class="tool-price">2 credits</div>
+          </div>
+        </div>
+      </div>
+      <div class="run-wrap">
+        <button class="run-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Enhance Image
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /portalPage -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-copy">© 2025 ImageAssist. All rights reserved.</span>
+    <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+  </div>
+</footer>
+
+<!-- ═══════ LOGIN MODAL ═══════ -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Welcome back</div><div class="modal-sub">Sign in to your account</div></div>
+      <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Email address</label><input type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input type="password" placeholder="••••••••"></div>
+      <button class="modal-btn" onclick="doLogin()">Log in</button>
+      <div class="modal-divider"></div>
+      <div class="modal-switch">Don't have an account? <a onclick="switchModal('loginModal','signupModal')">Sign up free</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SIGNUP MODAL ═══════ -->
+<div class="modal-overlay" id="signupModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">Create your account</div><div class="modal-sub">Start enhancing property photos today</div></div>
+      <button class="modal-close" onclick="closeModal('signupModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field">
+          <label>First name</label>
+          <input type="text" id="signupFirst" placeholder="John">
+        </div>
+        <div class="field">
+          <label>Last name</label>
+          <input type="text" id="signupLast" placeholder="Smith">
+        </div>
+      </div>
+      <div class="field">
+        <label>Email address</label>
+        <input type="email" id="signupEmail" placeholder="youremail@address.com.au">
+      </div>
+      <div class="field">
+        <label>Country</label>
+        <select>
+          <option value="">Select your country…</option>
+          <option>Australia</option>
+          <option>New Zealand</option>
+          <option>United Kingdom</option>
+          <option>United States</option>
+          <option>Canada</option>
+          <option>Ireland</option>
+          <option>South Africa</option>
+          <option>Singapore</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Password</label><input type="password" placeholder="Create a password"></div>
+      <button class="modal-btn" onclick="doSignup()">Create account — free</button>
+      <div class="modal-switch">Already have an account? <a onclick="switchModal('signupModal','loginModal')">Log in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CONGRATS MODAL ═══════ -->
+<div class="modal-overlay" id="congratsModal">
+  <div class="congrats-modal">
+    <div class="congrats-body">
+      <div class="congrats-icon">🎉</div>
+      <div class="congrats-title">You're all set!</div>
+      <div class="congrats-msg">Your account has been created. Confirm your email to unlock your free credits.</div>
+      <div class="congrats-credits">
+        <span>⚡</span>
+        <span>10 free credits on email confirmation</span>
+      </div>
+      <div class="congrats-note">We've sent a confirmation link to your email address. Credits will be added automatically once confirmed.</div>
+      <button class="congrats-btn" onclick="finishSignup()">Go to my portal →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ BUY CREDITS MODAL ═══════ -->
+<div class="modal-overlay" id="buyModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <div><div class="modal-title">Buy Credits</div><div class="modal-sub">Credits never expire — use on any enhancement</div></div>
+      <button class="modal-close" onclick="closeModal('buyModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="buy-option"><div><div class="buy-option-label">10 credits</div><div class="buy-option-sub">≈ 2 Grass Replacement images</div></div><div class="buy-option-right"><div class="buy-option-price">$10.00</div><div class="buy-option-each">$1.00 per credit</div></div></div>
+      <div class="buy-option"><div><div class="buy-option-label">25 credits</div><div class="buy-option-sub">≈ 5 Declutter images</div></div><div class="buy-option-right"><div class="buy-option-price">$25.00</div><div class="buy-option-each">$1.00 per credit</div></div></div>
+      <div class="buy-option"><div><div class="buy-option-label">50 credits</div><div class="buy-option-sub">≈ 10 Declutter images</div></div><div class="buy-option-right"><div class="buy-option-price">$47.50</div><div class="buy-option-each">$0.95 per credit</div></div></div>
+      <div class="buy-option"><div><div class="buy-option-label">75 credits</div><div class="buy-option-sub">≈ 15 Declutter or 37 Grass Replacement</div></div><div class="buy-option-right"><div class="buy-option-price">$60.00</div><div class="buy-option-each">$0.80 per credit</div></div></div>
+      <div class="buy-option featured"><div class="buy-feat-badge">Best value</div><div><div class="buy-option-label">150 credits</div><div class="buy-option-sub">≈ 30 Declutter or 75 Grass Replacement</div></div><div class="buy-option-right"><div class="buy-option-price">$100.00</div><div class="buy-option-each">$0.67 per credit</div></div></div>
+      <button class="modal-btn">Continue to Payment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Modal helpers ──
+function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden' }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow='' }
+function switchModal(a,b){ closeModal(a); openModal(b) }
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{ if(e.target===el) closeModal(el.id) }))
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id)) })
+
+// ── Pages ──
+function showHome(){ document.getElementById('homePage').style.display=''; document.getElementById('portalPage').style.display='none'; window.scrollTo(0,0) }
+function showPortal(){ document.getElementById('homePage').style.display='none'; document.getElementById('portalPage').style.display=''; window.scrollTo(0,0) }
+
+// ── Auth ──
+function doLogin(){
+  closeModal('loginModal');
+  document.getElementById('navGuest').style.display='none';
+  document.getElementById('navUser').style.display='flex';
+  document.getElementById('portalName').textContent='John';
+  showPortal();
+}
+
+function doSignup(){
+  const first=(document.getElementById('signupFirst').value||'').trim();
+  const displayName = first || 'there';
+  closeModal('signupModal');
+  // show congrats popup
+  openModal('congratsModal');
+  document.getElementById('portalName').textContent=displayName;
+}
+
+function finishSignup(){
+  closeModal('congratsModal');
+  document.getElementById('navGuest').style.display='none';
+  document.getElementById('navUser').style.display='flex';
+  showPortal();
+}
+
+function logout(){
+  document.getElementById('navGuest').style.display='flex';
+  document.getElementById('navUser').style.display='none';
+  showHome();
+}
+
+// ── Portal tabs ──
+function switchTab(panelId,btn){
+  document.querySelectorAll('.ptab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Tool selection ──
+document.querySelectorAll('.tool-grid').forEach(grid=>{
+  grid.querySelectorAll('.tool-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      grid.querySelectorAll('.tool-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+});
+
+// ── Drop zones ──
+[document.getElementById('dropZone'),document.getElementById('portalDrop')].forEach(dz=>{
+  if(!dz)return;
+  ['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('active')}));
+  ['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('active')}));
+});
+
+// ── Run btn ──
+document.getElementById('runBtn').addEventListener('click',function(){
+  this.innerHTML='<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Processing…';
+  this.style.opacity='.8'; this.disabled=true;
+  setTimeout(()=>{
+    this.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Enhance Image';
+    this.style.opacity='1'; this.disabled=false;
+  },3000);
+});
+</script>
+</body>
+</html>
